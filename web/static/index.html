@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanSage OCR - Interactive Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css?v=1.0.2">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-brain-circuit glow-icon"></i>
+                <h1>Scan<span>Sage</span></h1>
+            </div>
+            <p class="subtitle">State-of-the-Art Multi-Lingual Optical Character Recognition</p>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Sidebar / Control Panel -->
+            <section class="control-panel">
+                <div class="panel-card glass">
+                    <h2><i class="fa-solid fa-sliders"></i> Configuration</h2>
+                    
+                    <!-- Language Selection -->
+                    <div class="form-group">
+                        <label for="languages">Target Languages</label>
+                        <div class="lang-selector-wrapper">
+                            <button class="lang-dropdown-btn" id="langBtn">
+                                <span>Select Languages (English default)</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                            <div class="lang-dropdown-content" id="langDropdown">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="en" checked>
+                                    <span class="checkmark"></span> English (en)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="ch_sim">
+                                    <span class="checkmark"></span> Chinese Simplified (ch_sim)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="ch_tra">
+                                    <span class="checkmark"></span> Chinese Traditional (ch_tra)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="es">
+                                    <span class="checkmark"></span> Spanish (es)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="fr">
+                                    <span class="checkmark"></span> French (fr)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="de">
+                                    <span class="checkmark"></span> German (de)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="ko">
+                                    <span class="checkmark"></span> Korean (ko)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="ja">
+                                    <span class="checkmark"></span> Japanese (ja)
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" value="hi">
+                                    <span class="checkmark"></span> Hindi (hi)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="selected-langs-tags" id="selectedLangsTags">
+                            <span class="lang-tag">en</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropzone / Upload Panel -->
+                <div class="drop-zone glass" id="dropZone">
+                    <input type="file" id="fileInput" accept="image/*" class="file-input">
+                    <div class="drop-zone-content">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <h3>Drag & Drop Image Here</h3>
+                        <p>Supports PNG, JPG, JPEG, WEBP</p>
+                        <button class="btn btn-primary">Browse Files</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section (Initially hidden or shows idle state) -->
+            <section class="results-viewer" id="resultsViewer">
+                <div class="idle-state" id="idleState">
+                    <i class="fa-regular fa-image"></i>
+                    <h3>No Image Loaded</h3>
+                    <p>Configure your languages and upload an image to start character recognition.</p>
+                </div>
+
+                <div class="loading-state hidden" id="loadingState">
+                    <div class="spinner">
+                        <div class="double-bounce1"></div>
+                        <div class="double-bounce2"></div>
+                    </div>
+                    <h3>Scanning Image...</h3>
+                    <p id="loadingMsg">Detecting text layouts and running neural networks...</p>
+                </div>
+
+                <div class="workspace hidden" id="workspace">
+                    <!-- Left: Interactive Canvas Overlay -->
+                    <div class="viewer-panel glass">
+                        <div class="panel-header">
+                            <h3><i class="fa-regular fa-eye"></i> Interactive Scan Viewer</h3>
+                            <button class="icon-btn" id="resetZoom" title="Reset View"><i class="fa-solid fa-expand"></i></button>
+                        </div>
+                        <div class="canvas-container" id="canvasContainer">
+                            <img id="sourceImage" alt="Uploaded Document">
+                            <canvas id="overlayCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Text Output and Metrics -->
+                    <div class="output-panel glass">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-list-check"></i> Extracted Text</h3>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm" id="copyAllBtn" title="Copy all text to clipboard">
+                                    <i class="fa-regular fa-copy"></i> Copy All
+                                </button>
+                                <button class="btn btn-secondary btn-sm" id="downloadTxtBtn" title="Download text file">
+                                    <i class="fa-solid fa-file-arrow-down"></i> TXT
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Search/Filter Bar -->
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="searchText" placeholder="Filter extracted text...">
+                        </div>
+
+                        <!-- Results List -->
+                        <div class="results-list" id="resultsList">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>ScanSage OCR Engine &copy; 2026. Made with ❤️ using PyTorch & FastAPI.</p>
+        </footer>
+    </div>
+
+    <script src="/static/main.js?v=1.0.2"></script>
+</body>
+</html>
